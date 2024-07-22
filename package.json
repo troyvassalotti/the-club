@@ -1,5 +1,7 @@
 {
-  "name": "the-club",
+  "type": "module",
+  "name": "@troyv/the-club",
+  "description": "Web component that turns your website into a club (the music kind).",
   "version": "1.0.2-alpha.0",
   "main": "the-club.js",
   "scripts": {

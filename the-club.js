@@ -24,7 +24,7 @@ export default class TheClub extends LitElement {
     this.fftSize;
   }
 
-  static tagName = "bumpin-that";
+  static tagName = "the-club";
 
   static register() {
     if (!window.customElements.get(this.tagName)) {
@@ -116,7 +116,7 @@ export default class TheClub extends LitElement {
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(`
       .is-bumpin-that-beat {
-        background-image: var(--bumpin-that-background) !important;
+        background-image: var(--the-club-background) !important;
       }
     `);
 
@@ -126,7 +126,7 @@ export default class TheClub extends LitElement {
   static applyGradientStyles(gradients) {
     document.body.classList.add("is-bumpin-that-beat");
     document.body.style.setProperty(
-      "--bumpin-that-background",
+      "--the-club-background",
       `radial-gradient(circle at top right, ${gradients.join(",")})`,
     );
   }
