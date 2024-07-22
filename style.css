@@ -12,3 +12,7 @@ body {
   background: #279af1;
   min-block-size: 100dvh;
 }
+
+main > * + * {
+  margin-block-start: 3rem;
+}

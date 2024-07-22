@@ -1,6 +1,5 @@
 /**
  * @file the-club web component.
- * @link https://blog.logrocket.com/audio-visualizer-from-scratch-javascript/
  */
 
 import { html, css, LitElement } from "https://esm.sh/lit";
@@ -10,16 +9,14 @@ import iteratinator from "./lib/iterators.js";
 export default class TheClub extends LitElement {
   constructor() {
     super();
-    this.worker = new Worker(new URL("./worker.js", import.meta.url), {
-      type: "module",
-    });
     this.audioCtx = new AudioContext();
     this.audioSource = null;
     this.analyzer = null;
     this.bufferLength = null;
     this.dataArray = null;
+    this.uploadedFile = null;
+    this.initialized = false;
 
-    this.visualizerType = "standard";
     this.randomizeColors = false;
     this.fftSize;
   }
@@ -35,10 +32,6 @@ export default class TheClub extends LitElement {
   static properties = {
     /** URL for the audio source. */
     src: { type: String },
-    /**
-     * @attribute visualizertype
-     * @type {'split' | 'standard'} */
-    visualizerType: { type: String },
     /**
      * @attribute randomizecolors
      * @type {boolean}
@@ -56,7 +49,10 @@ export default class TheClub extends LitElement {
     :host {
       all: unset;
       box-sizing: border-box;
-      display: block;
+    }
+
+    :host([popover]:not(:popover-open)) {
+      display: none;
     }
 
     *,
@@ -66,20 +62,7 @@ export default class TheClub extends LitElement {
       margin: 0px;
       padding: 0px;
     }
-
-    canvas {
-      block-size: 100%;
-      display: block;
-      inline-size: 100%;
-      inset: 0;
-      pointer-events: none;
-      position: fixed;
-    }
   `;
-
-  get canvas() {
-    return this.renderRoot.querySelector("#canvas");
-  }
 
   get audio() {
     if (this.querySelector("audio")) {
@@ -87,14 +70,6 @@ export default class TheClub extends LitElement {
     }
 
     return this.renderRoot.querySelector("#audio");
-  }
-
-  static makeCanvasWidth() {
-    return window.innerWidth;
-  }
-
-  static makeCanvasHeight() {
-    return window.innerHeight;
   }
 
   static resetBodyClass() {
@@ -131,6 +106,38 @@ export default class TheClub extends LitElement {
     );
   }
 
+  handleFileUpload(event) {
+    const { target } = event;
+
+    if (target.files.length > 0) {
+      this.uploadedFile = target.files[0];
+      this.src = URL.createObjectURL(this.uploadedFile);
+    }
+  }
+
+  renderDefaultSlotContent() {
+    if (this.src) {
+      return html`
+        <audio
+          id="audio"
+          controls
+          crossorigin
+          src="${this.src}"
+          @loadedmetadata=${this.setup}
+        >
+          Your browser doesn't support audio.
+        </audio>
+      `;
+    }
+
+    return html`<input
+      type="file"
+      accept="audio/*"
+      id="upload"
+      @change=${this.handleFileUpload}
+    />`;
+  }
+
   drawGradient({ bufferLength, dataArray }) {
     const isAtRest = TheClub.resetGradientIfStopped(dataArray);
     if (isAtRest) return;
@@ -147,11 +154,6 @@ export default class TheClub extends LitElement {
     TheClub.applyGradientStyles(gradients);
   }
 
-  setupWorker() {
-    const canvas = this.canvas.transferControlToOffscreen();
-    this.worker.postMessage({ canvas }, [canvas]);
-  }
-
   setupAudioContext() {
     this.audioSource = this.audioCtx.createMediaElementSource(this.audio);
     this.analyzer = this.audioCtx.createAnalyser();
@@ -166,25 +168,14 @@ export default class TheClub extends LitElement {
     this.audio?.addEventListener("play", this.handleAudioPlay);
   }
 
-  init() {
-    this.setupWorker();
+  setup() {
+    if (this.initialized) return;
+
     this.setupAudioContext();
     this.setupAudioPlayer();
     TheClub.createStylesheet();
+    this.initialized = true;
   }
-
-  visualize = () => {
-    this.analyzer.getByteFrequencyData(this.dataArray);
-    this.worker.postMessage(
-      {
-        bufferLength: this.bufferLength,
-        dataArray: this.dataArray,
-        visualizerType: this.visualizerType,
-      },
-      {},
-    );
-    window.requestAnimationFrame(this.visualize);
-  };
 
   lightShow = () => {
     this.analyzer.getByteFrequencyData(this.dataArray);
@@ -196,33 +187,18 @@ export default class TheClub extends LitElement {
   };
 
   handleAudioPlay = () => {
-    this.visualize();
     this.lightShow();
   };
 
-  firstUpdated() {
-    this.init();
-  }
-
-  disconnectedCallback() {
-    this.worker.terminate();
-    super.disconnectedCallback();
+  updated(changedProperties) {
+    if (changedProperties.has("src")) {
+      this.setup();
+    }
   }
 
   render() {
-    return html`
-      <slot>
-        <audio id="audio" controls crossorigin src="${this.src}">
-          Your browser doesn't support audio.
-        </audio>
-      </slot>
-      <canvas
-        part="canvas"
-        id="canvas"
-        width="${TheClub.makeCanvasWidth()}"
-        height="${TheClub.makeCanvasHeight()}"
-        >Your browser doesn't support canvas.</canvas
-      >
-    `;
+    return html`<slot @slotchange=${this.setup}
+      >${this.renderDefaultSlotContent()}</slot
+    >`;
   }
 }

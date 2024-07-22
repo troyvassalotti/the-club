@@ -12,10 +12,24 @@
   </head>
   <body>
     <main>
-      <the-club
-        src="https://res.cloudinary.com/dpmchqezv/video/upload/v1684975533/troy/lets-try-this-again/02_-_In_awe_of_you_cld3he.mp3"
-        visualizertype="split"
-      ></the-club>
+      <div id="using-src">
+        <the-club
+          src="https://res.cloudinary.com/dpmchqezv/video/upload/v1684975533/troy/lets-try-this-again/02_-_In_awe_of_you_cld3he.mp3"
+        ></the-club>
+      </div>
+      <div id="using-popover">
+        <button popovertarget="the-club">Enter the Club</button>
+        <the-club popover id="the-club"></the-club>
+      </div>
+      <div id="using-slot">
+        <the-club>
+          <audio
+            controls
+            src="https://res.cloudinary.com/dpmchqezv/video/upload/v1684975533/troy/lets-try-this-again/02_-_In_awe_of_you_cld3he.mp3"
+            crossorigin
+          ></audio>
+        </the-club>
+      </div>
     </main>
   </body>
 </html>
