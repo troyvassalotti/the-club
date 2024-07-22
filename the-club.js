@@ -49,18 +49,13 @@ export default class TheClub extends LitElement {
     :host {
       all: unset;
       box-sizing: border-box;
-    }
-
-    :host([popover]:not(:popover-open)) {
-      display: none;
+      display: revert;
     }
 
     *,
     *::after,
     *::before {
       box-sizing: border-box;
-      margin: 0px;
-      padding: 0px;
     }
   `;
 
