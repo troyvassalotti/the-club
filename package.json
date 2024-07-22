@@ -1,6 +1,6 @@
 {
   "name": "the-club",
-  "version": "1.0.1-alpha.0",
+  "version": "1.0.0",
   "main": "the-club.js",
   "scripts": {
     "start": "npx http-server ."
